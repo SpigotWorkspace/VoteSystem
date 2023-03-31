@@ -1,0 +1,7 @@
+name: VoteSystem
+version: ${project.version}
+author: SpigotWorkspace
+main: de.spigotworkspace.votesystem.VoteSystem
+commands:
+  votedata:
+depends: [Votifier]
