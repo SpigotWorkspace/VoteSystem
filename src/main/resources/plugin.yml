@@ -4,4 +4,5 @@ author: SpigotWorkspace
 main: de.spigotworkspace.votesystem.VoteSystem
 commands:
   votedata:
+  vote:
 depends: [Votifier]

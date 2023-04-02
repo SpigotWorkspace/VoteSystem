@@ -1,5 +1,6 @@
 package de.spigotworkspace.votesystem;
 
+import de.spigotworkspace.votesystem.commands.VoteCommand;
 import de.spigotworkspace.votesystem.commands.VoteDataCommand;
 import de.spigotworkspace.votesystem.datasource.DataSource;
 import de.spigotworkspace.votesystem.helper.SerializationHelper;
@@ -20,12 +21,12 @@ import java.util.UUID;
 
 
 public class VoteSystem extends JavaPlugin {
-
 	private DataSource dataSource;
+
 	@Override
 	public void onEnable() {
 		loadConfig();
-		if (!(this.dataSource.connect())) {
+		if (!(this.dataSource.createDataSource())) {
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
@@ -48,6 +49,7 @@ public class VoteSystem extends JavaPlugin {
 
 	private void registerCommands() {
 		getCommand("votedata").setExecutor(new VoteDataCommand(this));
+		getCommand("vote").setExecutor(new VoteCommand(this));
 	}
 
 	private void loadConfig() {
@@ -56,7 +58,7 @@ public class VoteSystem extends JavaPlugin {
 		this.saveDefaultConfig();
 		FileConfiguration config = this.getConfig();
 
-
+		//set default
 		if (config.get("database") == null) {
 			config.addDefault("database", new DataSourceProperties());
 			config.options().copyDefaults(true);

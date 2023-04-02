@@ -16,7 +16,7 @@ public class DataSource {
 		this.dataSourceProperties = dataSourceProperties;
 	}
 
-	public boolean connect() {
+	public boolean createDataSource() {
 		if (dataSourceProperties != null) {
 			hikariDataSource = new HikariDataSource();
 			hikariDataSource.setDataSourceClassName("org.mariadb.jdbc.MariaDbDataSource");
@@ -34,7 +34,7 @@ public class DataSource {
 	}
 
 	public ResultSet sendQuery(String query) {
-		try(Connection connection = getHikariDataSource().getConnection();
+		try (Connection connection = getHikariDataSource().getConnection();
 			PreparedStatement prepareStatement = connection.prepareStatement(query)
 		){
 			return prepareStatement.executeQuery();
