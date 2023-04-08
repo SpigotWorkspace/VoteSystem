@@ -2,26 +2,24 @@ package de.spigotworkspace.votesystem;
 
 import de.spigotworkspace.votesystem.commands.VoteCommand;
 import de.spigotworkspace.votesystem.commands.VoteDataCommand;
-import de.spigotworkspace.votesystem.datasource.DataSource;
-import de.spigotworkspace.votesystem.helper.SerializationHelper;
+import de.spigotworkspace.votesystem.data.DataSource;
+import de.spigotworkspace.votesystem.data.DataStore;
+import de.spigotworkspace.votesystem.listeners.InventoryListener;
 import de.spigotworkspace.votesystem.listeners.VoteListener;
+import de.spigotworkspace.votesystem.objects.ConfigProperties;
 import de.spigotworkspace.votesystem.objects.DataSourceProperties;
-import de.spigotworkspace.votesystem.objects.VotePlayer;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.StringUtil;
-
-import java.util.Base64;
-import java.util.UUID;
 
 
 public class VoteSystem extends JavaPlugin {
 	private DataSource dataSource;
+	private DataStore dataStore;
+	private ConfigProperties configProperties;
 
 	@Override
 	public void onEnable() {
@@ -30,6 +28,8 @@ public class VoteSystem extends JavaPlugin {
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
+		this.dataStore = new DataStore(this);
+		this.dataStore.startAutoSave();
 		prepareDatabase();
 		registerListeners();
 		registerCommands();
@@ -37,6 +37,7 @@ public class VoteSystem extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		this.dataStore.saveVotePlayers();
 		if (this.dataSource.getHikariDataSource() != null) {
 			this.dataSource.getHikariDataSource().close();
 		}
@@ -45,6 +46,7 @@ public class VoteSystem extends JavaPlugin {
 	private void registerListeners() {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 		pluginManager.registerEvents(new VoteListener(this), this);
+		pluginManager.registerEvents(new InventoryListener(this), this);
 	}
 
 	private void registerCommands() {
@@ -54,13 +56,20 @@ public class VoteSystem extends JavaPlugin {
 
 	private void loadConfig() {
 		ConfigurationSerialization.registerClass(DataSourceProperties.class, "DataSourceProperties");
+		ConfigurationSerialization.registerClass(ConfigProperties.class, "ConfigProperties");
 
 		this.saveDefaultConfig();
 		FileConfiguration config = this.getConfig();
 
-		//set default
+		//set defaults
 		if (config.get("database") == null) {
 			config.addDefault("database", new DataSourceProperties());
+			config.options().copyDefaults(true);
+			this.saveConfig();
+		}
+
+		if (config.get("properties") == null) {
+			config.addDefault("properties", new ConfigProperties());
 			config.options().copyDefaults(true);
 			this.saveConfig();
 		}
@@ -73,13 +82,24 @@ public class VoteSystem extends JavaPlugin {
 			dataSourceProperties = null;
 		}
 		this.dataSource = new DataSource(dataSourceProperties);
+
+		//load properties
+		this.configProperties = (ConfigProperties) config.get("properties");
 	}
 
 	private void prepareDatabase() {
-		this.dataSource.sendQuery("CREATE TABLE IF NOT EXISTS votedata (UUID VARCHAR(36), VotePlayer VARCHAR(100))");
+		this.dataSource.sendQuery("CREATE TABLE IF NOT EXISTS votedata (uuid VARCHAR(36), data BLOB, PRIMARY KEY (uuid))");
 	}
 
 	public DataSource getDataSource() {
 		return dataSource;
+	}
+
+	public DataStore getDataStore() {
+		return dataStore;
+	}
+
+	public ConfigProperties getConfigProperties() {
+		return configProperties;
 	}
 }

@@ -2,33 +2,40 @@ package de.spigotworkspace.votesystem.objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import java.io.Serializable;
 import java.util.UUID;
 
 public class VotePlayer implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private UUID uuid;
-
+	private UUID uniqueId;
 	private int votes;
 	private int streak;
 	private int points;
+	private boolean changed;
 
-	public Player getPlayer(){
-		return getOfflinePlayer().getPlayer();
+	public VotePlayer(UUID uniqueId) {
+		this.uniqueId = uniqueId;
+		this.votes = 0;
+		this.streak = 0;
+		this.points = 0;
+		this.changed = false;
 	}
 
-	public OfflinePlayer getOfflinePlayer(){
-		return Bukkit.getOfflinePlayer(getUUID());
+	public OfflinePlayer getOfflinePlayer() {
+		return Bukkit.getOfflinePlayer(getUniqueId());
 	}
 
-	public UUID getUUID() {
-		return uuid;
+	public String getName() {
+		return getOfflinePlayer().getName();
 	}
 
-	public VotePlayer setUUID(UUID uuid) {
-		this.uuid = uuid;
+	public UUID getUniqueId() {
+		return uniqueId;
+	}
+
+	public VotePlayer setUniqueId(UUID uniqueId) {
+		this.uniqueId = uniqueId;
 		return this;
 	}
 
@@ -57,5 +64,22 @@ public class VotePlayer implements Serializable {
 	public VotePlayer setPoints(int points) {
 		this.points = points;
 		return this;
+	}
+
+	public void addPoints(int points) {
+		setPoints(getPoints() + points);
+	}
+
+	public boolean hasChanged() {
+		return changed;
+	}
+
+	public VotePlayer setChanged(boolean changed) {
+		this.changed = changed;
+		return this;
+	}
+
+	public void addVote() {
+		setVotes(getVotes() + 1);
 	}
 }

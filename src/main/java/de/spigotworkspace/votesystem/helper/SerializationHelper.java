@@ -6,17 +6,33 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class SerializationHelper {
-	public static byte[] toByteArray(Object object) {
-
-		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			 BukkitObjectOutputStream bukkitObjectOutputStream = new BukkitObjectOutputStream(byteArrayOutputStream);
-		) {
-			bukkitObjectOutputStream.writeObject(object);
-
-			return byteArrayOutputStream.toByteArray();
+public abstract class SerializationHelper {
+	public static ArrayList<byte[]> toByteArrayList(List<?> objects) {
+		AtomicReference<BukkitObjectOutputStream> bukkitObjectOutputStream = new AtomicReference<>();
+		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+			ArrayList<byte[]> bytes = new ArrayList<>();
+			objects.forEach(object -> {
+				try {
+					bukkitObjectOutputStream.set(new BukkitObjectOutputStream(byteArrayOutputStream));
+					bukkitObjectOutputStream.get().writeObject(object);
+					bukkitObjectOutputStream.get().flush();
+					bytes.add(byteArrayOutputStream.toByteArray());
+					byteArrayOutputStream.reset();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				} finally {
+					try {
+						bukkitObjectOutputStream.get().close();
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+			return bytes;
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
