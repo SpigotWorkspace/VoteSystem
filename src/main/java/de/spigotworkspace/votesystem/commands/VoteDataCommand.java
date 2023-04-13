@@ -11,6 +11,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class VoteDataCommand implements CommandExecutor {
@@ -24,35 +29,55 @@ public class VoteDataCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("voteystem.votedata")) {
-                player.sendMessage("§cDu hast dafür keine Berechtigung");
-                return false;
-            }
 
-            if (args.length != 1) {
-                command.setUsage("§cUsage: /votedata <Name/UUID>");
-                return false;
-            }
-
-            String value = args[0];
-            ProfileFetcher.getFromNameOrUniqueId(value, ((jsonObject, success) -> {
-                if (success) {
-                    voteSystem.getDataStore().get((UUID) jsonObject.get("id"), votePlayer -> {
-                        Inventory inventory = Bukkit.createInventory(null, 9, "VoteData - " + votePlayer.getName());
-                        for (int i = 0; i < inventory.getSize(); i++) {
-                            inventory.setItem(i, new ItemBuilder(Material.STAINED_GLASS_PANE, 7).setDisplayName("§8").build());
+            switch (args.length) {
+                case 0:
+                    openDataInventory(player, player.getUniqueId());
+                    break;
+                case 1:
+                    if (!player.hasPermission("voteystem.votedata")) {
+                        player.sendMessage("§cDu hast dafür keine Berechtigung");
+                        return false;
+                    }
+                    String value = args[0];
+                    ProfileFetcher.getFromNameOrUniqueId(value, ((jsonObject, success) -> {
+                        if (success) {
+                            openDataInventory(player, (UUID) jsonObject.get("id"));
                         }
-                        inventory.setItem(4, new ItemBuilder(Material.PAPER).setDisplayName("§c"+votePlayer.getName())
-                                .setLore("Votes: "+ votePlayer.getVotes(),
-                                        "Points: " + votePlayer.getPoints(),
-                                        "Streak: " + votePlayer.getStreak())
-                                .build());
-
-                        player.openInventory(inventory);
-                    });
-                }
-            }));
+                    }));
+                    break;
+                default:
+                    if (player.hasPermission("voteystem.votedata")) {
+                        player.sendMessage("§cUsage: /votedata <Name/UUID>");
+                        return false;
+                    }
+                    break;
+            }
         }
         return false;
+    }
+
+    private void openDataInventory(Player player, UUID uuid) {
+        voteSystem.getDataStore().get(uuid, votePlayer -> {
+            Inventory inventory = Bukkit.createInventory(null, 9, "§b§lVote-Daten");
+            for (int i = 0; i < inventory.getSize(); i++) {
+                inventory.setItem(i, new ItemBuilder(Material.STAINED_GLASS_PANE, 7).setDisplayName("§8").build());
+            }
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("Votes: "+ votePlayer.getVotes());
+            lore.add("Points: " + votePlayer.getPoints());
+            lore.add("Streak: " + votePlayer.getStreak());
+            lore.add("Letzter Vote: N/A");
+
+            if (votePlayer.getLastVote() != 0) {
+                LocalDate localDate = Instant.ofEpochMilli(votePlayer.getLastVote()).atZone(ZoneId.of("Europe/Berlin")).toLocalDate();
+                String formattedDate = localDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                lore.set(3, "Letzter Vote: " + formattedDate);
+            }
+
+            inventory.setItem(4, new ItemBuilder(Material.PAPER).setDisplayName("§c"+votePlayer.getName()).setLore(lore).build());
+
+            player.openInventory(inventory);
+        });
     }
 }

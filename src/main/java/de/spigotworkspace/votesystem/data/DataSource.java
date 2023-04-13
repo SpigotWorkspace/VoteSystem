@@ -74,7 +74,7 @@ public class DataSource {
 		try {
 			if (resultSet.next()) {
 				byte[] bytes = resultSet.getBytes("data");
-				return SerializationHelper.fromByteArray(bytes, VotePlayer.class);
+				return SerializationHelper.fromByteArray(bytes, VotePlayer.class).setUniqueId(uuid);
 			} else {
 				return null;
 			}
@@ -84,7 +84,7 @@ public class DataSource {
 	}
 
 	protected void saveVotePlayers(HashMap<UUID, VotePlayer> votePlayers) {
-		List<VotePlayer> votePlayersToUpdate = votePlayers.values().stream().filter(votePlayer -> votePlayer.hasChanged()).collect(Collectors.toList());
+		List<VotePlayer> votePlayersToUpdate = votePlayers.values().stream().filter(votePlayer -> votePlayer.isDirty()).collect(Collectors.toList());
 		if (votePlayersToUpdate.isEmpty()) return;
 		String query = buildQuery(votePlayersToUpdate);
 		sendQuery(query, preparedStatement -> {
@@ -100,7 +100,7 @@ public class DataSource {
 					uuidIndex.addAndGet(2);
 					bytesIndex.addAndGet(2);
 					index.getAndIncrement();
-					votePlayer.setChanged(false);
+					votePlayer.setDirty(false);
 				} catch (SQLException e) {
 					throw new RuntimeException(e);
 				}

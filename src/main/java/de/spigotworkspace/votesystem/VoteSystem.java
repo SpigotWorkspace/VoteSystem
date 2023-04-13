@@ -1,9 +1,9 @@
 package de.spigotworkspace.votesystem;
 
-import de.spigotworkspace.votesystem.commands.VoteCommand;
-import de.spigotworkspace.votesystem.commands.VoteDataCommand;
+import de.spigotworkspace.votesystem.commands.*;
 import de.spigotworkspace.votesystem.data.DataSource;
 import de.spigotworkspace.votesystem.data.DataStore;
+import de.spigotworkspace.votesystem.listeners.BlockListener;
 import de.spigotworkspace.votesystem.listeners.InventoryListener;
 import de.spigotworkspace.votesystem.listeners.VoteListener;
 import de.spigotworkspace.votesystem.objects.ConfigProperties;
@@ -14,6 +14,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.stream.Collectors;
 
 
 public class VoteSystem extends JavaPlugin {
@@ -33,6 +36,7 @@ public class VoteSystem extends JavaPlugin {
 		prepareDatabase();
 		registerListeners();
 		registerCommands();
+		startAutoReminder();
 	}
 
 	@Override
@@ -47,9 +51,12 @@ public class VoteSystem extends JavaPlugin {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 		pluginManager.registerEvents(new VoteListener(this), this);
 		pluginManager.registerEvents(new InventoryListener(this), this);
+		pluginManager.registerEvents(new BlockListener(), this);
 	}
 
 	private void registerCommands() {
+		getCommand("getreward").setExecutor(new GetRewardCommand(this));
+		getCommand("managenotifications").setExecutor(new ManageNotificationsCommand(this));
 		getCommand("votedata").setExecutor(new VoteDataCommand(this));
 		getCommand("vote").setExecutor(new VoteCommand(this));
 	}
@@ -101,5 +108,24 @@ public class VoteSystem extends JavaPlugin {
 
 	public ConfigProperties getConfigProperties() {
 		return configProperties;
+	}
+
+	private void startAutoReminder() {
+		int interval = this.getConfigProperties().getAutoReminderIntervalInMinutes();
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				Bukkit.getOnlinePlayers().forEach(player -> {
+					dataStore.get(player.getUniqueId(), votePlayer -> {
+						if (votePlayer.isReminderActivated() && votePlayer.getVotesToday() == 0) {
+							votePlayer.sendMessage("§6§lDu hast heute noch nicht gevotet!\n" +
+									"§6Hier kannst du für den Server voten:\n" +
+									"§d - "+ getConfigProperties().getVoteSites().stream().collect(Collectors.joining("\n - ")) +
+									"\n§6Kleiner Tipp: Es lohnt sich.");
+						}
+					});
+				});
+			}
+		}.runTaskTimer(this, 20L * 60 * interval, 20L * 60 * interval);
 	}
 }

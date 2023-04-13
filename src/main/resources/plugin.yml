@@ -3,6 +3,8 @@ version: ${project.version}
 author: SpigotWorkspace
 main: de.spigotworkspace.votesystem.VoteSystem
 commands:
+  getreward:
+  managenotifications:
   votedata:
   vote:
 depends: [Votifier]

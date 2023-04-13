@@ -5,6 +5,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ItemBuilder {
@@ -31,6 +32,11 @@ public class ItemBuilder {
         return this;
     }
 
+    public ItemBuilder setLore(ArrayList<String> lore) {
+        itemMeta.setLore(lore);
+        return this;
+    }
+
     public ItemBuilder setAmount(int amount) {
         itemStack.setAmount(amount);
         return this;
@@ -38,6 +44,11 @@ public class ItemBuilder {
 
     public ItemBuilder addEnchantment(Enchantment enchantment, int level, boolean enchant) {
         itemMeta.addEnchant(enchantment, level, enchant);
+        return this;
+    }
+
+    public ItemBuilder setLocalizedName(String localizedName) {
+        itemMeta.setLocalizedName(localizedName);
         return this;
     }
 

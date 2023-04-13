@@ -5,6 +5,9 @@ import de.spigotworkspace.votesystem.helper.SchedulerHelper;
 import de.spigotworkspace.votesystem.objects.VotePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -21,24 +24,30 @@ public class DataStore {
 
     public void get(UUID uuid, Consumer<VotePlayer> callback) {
         Supplier<VotePlayer> runAsync = () -> {
+            VotePlayer votePlayer = null;
+            boolean found = false;
             if (votePlayers.containsKey(uuid)) {
-                return votePlayers.get(uuid);
+                votePlayer = votePlayers.get(uuid);
+                found = true;
             }
 
-            VotePlayer votePlayer;
-            if ((votePlayer = voteSystem.getDataSource().getVotePlayer(uuid)) == null) {
-                votePlayer = new VotePlayer(uuid);
+            if (!found) {
+                if ((votePlayer = voteSystem.getDataSource().getVotePlayer(uuid)) == null) {
+                    votePlayer = new VotePlayer(uuid);
+                }
             }
 
-            votePlayers.put(uuid, votePlayer);
+            LocalDate lastVote = Instant.ofEpochMilli(votePlayer.getLastVote()).atZone(ZoneId.of("Europe/Berlin")).toLocalDate();
+            LocalDate localDateNow = Instant.ofEpochMilli(Instant.now().toEpochMilli()).atZone(ZoneId.of("Europe/Berlin")).toLocalDate();
+            if (localDateNow.isAfter(lastVote)) {
+                votePlayer.setVotesToday(0);
+            }
+
+            votePlayers.putIfAbsent(uuid, votePlayer);
             return votePlayer;
         };
 
-        Consumer<VotePlayer> runSync = (votePlayer) -> {
-            callback.accept(votePlayer);
-        };
-
-        SchedulerHelper.runTaskAsynchronously(voteSystem, runAsync, runSync);
+        SchedulerHelper.runTaskAsynchronously(voteSystem, runAsync, callback);
     }
 
     public void saveVotePlayers() {
