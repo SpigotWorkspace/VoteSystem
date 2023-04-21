@@ -1,6 +1,6 @@
 package de.spigotworkspace.votesystem.commands;
 
-import de.spigotworkspace.votesystem.VoteSystem;
+import de.spigotworkspace.votesystem.VotePlugin;
 import de.spigotworkspace.votesystem.helper.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -11,10 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 public class ManageNotificationsCommand implements CommandExecutor {
-    private VoteSystem voteSystem;
+    private VotePlugin votePlugin;
 
-    public ManageNotificationsCommand(VoteSystem voteSystem) {
-        this.voteSystem = voteSystem;
+    public ManageNotificationsCommand(VotePlugin votePlugin) {
+        this.votePlugin = votePlugin;
     }
 
     @Override
@@ -25,7 +25,7 @@ public class ManageNotificationsCommand implements CommandExecutor {
                 player.sendMessage("§cDu hast dafür keine Berechtigung");
                 return false;
             }
-            voteSystem.getDataStore().get(player.getUniqueId(), votePlayer -> {
+            votePlugin.getDataStore().get(player.getUniqueId(), votePlayer -> {
                 Inventory inventory = Bukkit.createInventory(null, 9, "§b§lBenachrichtigungen");
 
                 for (int i = 0; i < inventory.getSize(); i++) {

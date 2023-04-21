@@ -1,7 +1,7 @@
 name: VoteSystem
 version: ${project.version}
 author: SpigotWorkspace
-main: de.spigotworkspace.votesystem.VoteSystem
+main: de.spigotworkspace.votesystem.VotePlugin
 commands:
   getreward:
   managenotifications:

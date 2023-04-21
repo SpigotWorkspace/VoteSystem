@@ -1,6 +1,6 @@
 package de.spigotworkspace.votesystem.listeners;
 
-import de.spigotworkspace.votesystem.VoteSystem;
+import de.spigotworkspace.votesystem.VotePlugin;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,10 +11,10 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 
 public class InventoryListener implements Listener {
-    private VoteSystem voteSystem;
+    private VotePlugin votePlugin;
 
-    public InventoryListener(final VoteSystem voteSystem) {
-        this.voteSystem = voteSystem;
+    public InventoryListener(final VotePlugin votePlugin) {
+        this.votePlugin = votePlugin;
     }
 
     @EventHandler
@@ -28,7 +28,7 @@ public class InventoryListener implements Listener {
             if (!clickedItem.getType().equals(Material.BOOK_AND_QUILL)) return;
             List<String> lore = clickedItem.getLore();
             Player player = (Player) event.getWhoClicked();
-            voteSystem.getDataStore().get(player.getUniqueId(), votePlayer -> {
+            votePlugin.getDataStore().get(player.getUniqueId(), votePlayer -> {
                 if (clickedItem.getItemMeta().getDisplayName().equals("§9Broadcasts")) {
                     votePlayer.setBroadcastActivated(!votePlayer.isBroadcastActivated());
                     lore.set(2, "§7Aktuell: "+ (votePlayer.isBroadcastActivated() ? "§aaktiv" : "§cinaktiv"));

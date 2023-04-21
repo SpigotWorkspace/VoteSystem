@@ -1,6 +1,6 @@
 package de.spigotworkspace.votesystem.commands;
 
-import de.spigotworkspace.votesystem.VoteSystem;
+import de.spigotworkspace.votesystem.VotePlugin;
 import de.spigotworkspace.votesystem.helper.ItemBuilder;
 import de.spigotworkspace.votesystem.helper.ProfileFetcher;
 import org.bukkit.Bukkit;
@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class VoteDataCommand implements CommandExecutor {
-    private VoteSystem voteSystem;
+    private VotePlugin votePlugin;
 
-    public VoteDataCommand(VoteSystem voteSystem) {
-        this.voteSystem = voteSystem;
+    public VoteDataCommand(VotePlugin votePlugin) {
+        this.votePlugin = votePlugin;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class VoteDataCommand implements CommandExecutor {
     }
 
     private void openDataInventory(Player player, UUID uuid) {
-        voteSystem.getDataStore().get(uuid, votePlayer -> {
+        votePlugin.getDataStore().get(uuid, votePlayer -> {
             Inventory inventory = Bukkit.createInventory(null, 9, "§b§lVote-Daten");
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, new ItemBuilder(Material.STAINED_GLASS_PANE, 7).setDisplayName("§8").build());

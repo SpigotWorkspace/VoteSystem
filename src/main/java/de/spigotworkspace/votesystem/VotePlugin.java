@@ -19,7 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.stream.Collectors;
 
 
-public class VoteSystem extends JavaPlugin {
+public class VotePlugin extends JavaPlugin {
 	private DataSource dataSource;
 	private DataStore dataStore;
 	private ConfigProperties configProperties;

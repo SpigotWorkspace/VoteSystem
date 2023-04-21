@@ -2,7 +2,7 @@ package de.spigotworkspace.votesystem.listeners;
 
 import com.vexsoftware.votifier.model.Vote;
 import com.vexsoftware.votifier.model.VotifierEvent;
-import de.spigotworkspace.votesystem.VoteSystem;
+import de.spigotworkspace.votesystem.VotePlugin;
 import de.spigotworkspace.votesystem.helper.ProfileFetcher;
 import de.spigotworkspace.votesystem.objects.VotePlayer;
 import net.md_5.bungee.api.ChatColor;
@@ -19,10 +19,10 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 public class VoteListener implements Listener {
-	private VoteSystem voteSystem;
+	private VotePlugin votePlugin;
 
-	public VoteListener(final VoteSystem voteSystem) {
-		this.voteSystem = voteSystem;
+	public VoteListener(final VotePlugin votePlugin) {
+		this.votePlugin = votePlugin;
 	}
 
 	@EventHandler
@@ -31,13 +31,13 @@ public class VoteListener implements Listener {
 		ProfileFetcher.getFromNameOrUniqueId(vote.getUsername(), (jsonObject, success) -> {
 			if (success) {
 				Bukkit.getOnlinePlayers().forEach(player -> {
-					voteSystem.getDataStore().get(player.getUniqueId(), allVotePlayer -> {
+					votePlugin.getDataStore().get(player.getUniqueId(), allVotePlayer -> {
 						if (allVotePlayer.isBroadcastActivated()) {
 							player.sendMessage(String.format("§6§l%s §ehat gevotet. Danke! §4❤", jsonObject.getString("name")));
 						}
 					});
 				});
-				voteSystem.getDataStore().get((UUID) jsonObject.get("id"), votePlayer -> {
+				votePlugin.getDataStore().get((UUID) jsonObject.get("id"), votePlayer -> {
 					if (votePlayer == null) return;
 					handleRewards(votePlayer);
 				});

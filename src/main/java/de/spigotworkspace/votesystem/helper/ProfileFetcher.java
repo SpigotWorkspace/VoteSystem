@@ -20,7 +20,7 @@ public abstract class ProfileFetcher {
      *    - name: Username
      *
      * @param value UUID oder Username
-     * @param callback BiConsumer with a boolean which indicates whether the operation was successful or not. If the operation was successful the JSONObject contains the username and the UUID.
+     * @param callback {@link BiConsumer} with a boolean which indicates whether the operation was successful or not. If the operation was successful the JSONObject contains the username and the UUID.
      */
     public static void getFromNameOrUniqueId(String value, BiConsumer<JSONObject, Boolean> callback) {
         try {
@@ -48,7 +48,7 @@ public abstract class ProfileFetcher {
     /**
      *
      * @param username
-     * @return an optional with a UUID if the operation was successful
+     * @return an {@link Optional} with a UUID if the operation was successful
      */
     public static Optional<UUID> getUniqueIdFromName(String username) {
         try {

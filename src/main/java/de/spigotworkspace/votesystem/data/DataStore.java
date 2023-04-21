@@ -1,6 +1,6 @@
 package de.spigotworkspace.votesystem.data;
 
-import de.spigotworkspace.votesystem.VoteSystem;
+import de.spigotworkspace.votesystem.VotePlugin;
 import de.spigotworkspace.votesystem.helper.SchedulerHelper;
 import de.spigotworkspace.votesystem.objects.VotePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -16,10 +16,10 @@ import java.util.function.Supplier;
 public class DataStore {
     private HashMap<UUID, VotePlayer> votePlayers = new HashMap<>();
 
-    private VoteSystem voteSystem;
+    private VotePlugin votePlugin;
 
-    public DataStore(VoteSystem voteSystem) {
-        this.voteSystem = voteSystem;
+    public DataStore(VotePlugin votePlugin) {
+        this.votePlugin = votePlugin;
     }
 
     public void get(UUID uuid, Consumer<VotePlayer> callback) {
@@ -32,7 +32,7 @@ public class DataStore {
             }
 
             if (!found) {
-                if ((votePlayer = voteSystem.getDataSource().getVotePlayer(uuid)) == null) {
+                if ((votePlayer = votePlugin.getDataSource().getVotePlayer(uuid)) == null) {
                     votePlayer = new VotePlayer(uuid);
                 }
             }
@@ -47,21 +47,21 @@ public class DataStore {
             return votePlayer;
         };
 
-        SchedulerHelper.runTaskAsynchronously(voteSystem, runAsync, callback);
+        SchedulerHelper.runTaskAsynchronously(votePlugin, runAsync, callback);
     }
 
     public void saveVotePlayers() {
-        voteSystem.getDataSource().saveVotePlayers(votePlayers);
+        votePlugin.getDataSource().saveVotePlayers(votePlayers);
     }
 
     public void startAutoSave() {
-        int interval = voteSystem.getConfigProperties().getAutoSaveIntervalInMinutes();
+        int interval = votePlugin.getConfigProperties().getAutoSaveIntervalInMinutes();
         new BukkitRunnable() {
             @Override
             public void run() {
                 saveVotePlayers();
             }
-        }.runTaskTimerAsynchronously(voteSystem, 20L * 60 * interval, 20L * 60 * interval);
+        }.runTaskTimerAsynchronously(votePlugin, 20L * 60 * interval, 20L * 60 * interval);
     }
 
 

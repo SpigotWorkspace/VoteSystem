@@ -1,6 +1,6 @@
 package de.spigotworkspace.votesystem.commands;
 
-import de.spigotworkspace.votesystem.VoteSystem;
+import de.spigotworkspace.votesystem.VotePlugin;
 import de.spigotworkspace.votesystem.helper.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -10,10 +10,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 public class GetRewardCommand implements CommandExecutor {
-    private VoteSystem voteSystem;
+    private VotePlugin votePlugin;
 
-    public GetRewardCommand(VoteSystem voteSystem) {
-        this.voteSystem = voteSystem;
+    public GetRewardCommand(VotePlugin votePlugin) {
+        this.votePlugin = votePlugin;
     }
 
     @Override
@@ -21,7 +21,7 @@ public class GetRewardCommand implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            voteSystem.getDataStore().get(player.getUniqueId(), votePlayer -> {
+            votePlugin.getDataStore().get(player.getUniqueId(), votePlayer -> {
                 if (votePlayer.isRewardEarned()) {
                     Inventory inventory = player.getInventory();
                     if (inventory.firstEmpty() == -1) {
